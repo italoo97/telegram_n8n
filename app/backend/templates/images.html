@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciamento de Imagens</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --success: #4cc9f0;
+            --danger: #ef476f;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --radius: 12px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            color: var(--dark);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .logo i {
+            font-size: 2rem;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+
+        .btn-secondary:hover {
+            background: #f0f2ff;
+            transform: translateY(-2px);
+        }
+
+        .btn-admin {
+            background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+            color: white;
+        }
+
+        .btn-admin:hover {
+            background: linear-gradient(135deg, #ff5252, #ff7b7b);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .media-preview img,
+        .media-preview video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            cursor: pointer;
+        }
+
+
+        .subtitle {
+            color: var(--gray);
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+
+        .stats-bar {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 15px 25px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .stat-total {
+            background: rgba(67, 97, 238, 0.1);
+            color: var(--primary);
+        }
+
+        .stat-to-send {
+            background: rgba(76, 201, 240, 0.1);
+            color: var(--success);
+        }
+
+        .stat-content h3 {
+            font-size: 0.9rem;
+            color: var(--gray);
+            margin-bottom: 5px;
+        }
+
+        .stat-content strong {
+            font-size: 1.8rem;
+            color: var(--dark);
+        }
+
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .image-card {
+            background: white;
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .image-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+        }
+
+        /* ESTILO PARA IMAGENS QUE NÃO SERÃO ENVIADAS (send=False) */
+        .image-card.not-send {
+            opacity: 0.7;
+            position: relative;
+        }
+
+        .image-card.not-send::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .image-card.not-send .image-container img {
+            filter: grayscale(70%) brightness(0.8);
+        }
+
+        .image-container {
+            position: relative;
+            height: 200px;
+            overflow: hidden;
+            z-index: 2;
+        }
+
+        .image-container img {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .image-card:hover .image-container img {
+            transform: scale(1.05);
+        }
+
+        .image-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 15px;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 2;
+        }
+
+        .image-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .badge-send {
+            background: var(--success);
+            color: white;
+        }
+
+        .badge-not-send {
+            background: var(--gray);
+            color: white;
+        }
+
+        .image-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .image-action-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s;
+        }
+
+        .image-action-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .image-info {
+            padding: 20px;
+        }
+
+        .image-info h3 {
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .image-info p {
+            color: var(--gray);
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .image-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+
+        /* Checkbox estilizado */
+        .send-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .image-action-btn.delete-btn {
+            background: rgba(255, 0, 0, 0.2);
+            color: white;
+        }
+
+        .image-action-btn.delete-btn:hover {
+            background: rgba(255, 0, 0, 0.4);
+        }
+
+        .checkbox-container {
+            display: inline-block;
+            position: relative;
+            width: 50px;
+            height: 26px;
+        }
+
+        .checkbox-container input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .checkbox-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .checkbox-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .checkbox-slider {
+            background-color: var(--success);
+        }
+
+        input:checked + .checkbox-slider:before {
+            transform: translateX(24px);
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-top: 30px;
+            padding: 25px;
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: var(--gray);
+            font-size: 0.9rem;
+            border-top: 1px solid #eaeaea;
+        }
+
+        /* Modal para visualização da imagem */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal img {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 8px;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .nav-buttons {
+                width: 100%;
+                justify-content: flex-start;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .image-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            }
+            
+            .stats-bar {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .btn {
+                padding: 10px 18px;
+                font-size: 0.85rem;
+            }
+            
+            .image-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-images"></i>
+                <span>Gerenciamento de Imagens</span>
+            </div>
+            
+            <div class="nav-buttons">
+                <a href="/dash/dashboard/" class="btn btn-secondary">
+                    <i class="fas fa-chart-line"></i> Voltar ao Dashboard
+                </a>
+                <a href="/admin/" class="btn btn-admin" target="_blank">
+                    <i class="fas fa-cog"></i> Admin Django
+                </a>
+            </div>
+        </header>
+        
+        <main>
+            <p class="subtitle">Selecione quais imagens serão enviadas para os clientes</p>
+            
+            <!-- Estatísticas -->
+            <div class="stats-bar">
+                <div class="stat-card">
+                    <div class="stat-icon stat-total">
+                        <i class="fas fa-image"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>Total de Imagens</h3>
+                        <strong id="total-images">0</strong>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon stat-to-send">
+                        <i class="fas fa-paper-plane"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>Para Enviar</h3>
+                        <strong id="to-send-count">{{ images|length|default:0 }}</strong>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Formulário -->
+            <form method="post" id="images-form">
+                {% csrf_token %}
+                
+                <div class="image-grid" id="images-container">
+                    {% for img in images %}
+                    <div class="image-card {% if not img.send %}not-send{% endif %}" 
+                         data-image-id="{{ img.id }}"
+                         data-send-status="{{ img.send|lower }}">
+                        
+                        <div class="image-container">
+                            <div class="media-preview" data-url="{{ img.image.url }}"></div>
+                            
+                            <div class="image-overlay">
+                                <span class="image-badge {% if img.send %}badge-send{% else %}badge-not-send{% endif %}">
+                                    {% if img.send %}
+                                        <i class="fas fa-paper-plane"></i> Para enviar
+                                    {% else %}
+                                        <i class="fas fa-ban"></i> Não enviar
+                                    {% endif %}
+                                </span>
+                                
+                                <div class="image-actions">
+                                    <button type="button" class="image-action-btn" onclick="openModal('{{ img.image.url }}')">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="image-info">
+                            <h3>
+                                <i class="fas fa-box"></i>
+                                {{ img.product.name|truncatechars:30 }}
+                            </h3>
+                            <p>Código: #{{ img.product.id }}</p>
+                            
+                            <div class="image-meta">
+                                <div class="send-checkbox">
+                                    <label class="checkbox-container">
+                                        <input type="checkbox" 
+                                               name="image_{{ img.id }}"
+                                               value="on"
+                                               {% if img.send %}checked{% endif %}
+                                               onchange="toggleImageCard(this, {{ img.id }})"
+                                               data-original="{% if img.send %}true{% else %}false{% endif %}">
+                                        <span class="checkbox-slider"></span>
+                                    </label>
+                                    <span class="status-text">
+                                        {% if img.send %}Enviar{% else %}Não enviar{% endif %}
+                                    </span>
+                                    <button type="button" class="image-action-btn delete-btn" onclick="deleteImage({{ img.id }}, this)">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 40px; background: white; border-radius: var(--radius);">
+                        <i class="fas fa-image" style="font-size: 3rem; color: #ddd; margin-bottom: 15px;"></i>
+                        <h3>Nenhuma imagem encontrada</h3>
+                        <p>Faça upload de imagens pelo admin do Django</p>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn btn-primary" onclick="openImageUpload()">
+                        <i class="fas fa-upload"></i> Carregar Imagem
+                    </button>
+                    <input type="file" id="imageUpload" name="image" accept="image/*" style="display: none;" onchange="handleImageUpload(this)">
+                    <button type="button" class="btn btn-secondary" onclick="resetAllCheckboxes()">
+                        <i class="fas fa-undo"></i> Cancelar Alterações
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="saveSendStatus()">
+                        <i class="fas fa-save"></i> Salvar
+                    </button>
+                </div>
+            </form>
+        </main>
+        
+        <footer>
+            <p>Cang4 &copy; 2026 - Sistema de Gerenciamento de Conteudo</p>
+            <p id="footer-stats">Total de {{ images|length }} imagens cadastradas | Última atualização: {% now "d/m/Y H:i" %}</p>
+        </footer>
+    </div>
+    
+    <!-- Modal para visualização de imagem -->
+    <div class="modal" id="imageModal">
+        <button class="modal-close" onclick="closeModal()">&times;</button>
+        <img id="modalImage" style="display:none;">
+        <video id="modalVideo" controls style="display:none; max-width:90%; max-height:90%;"></video>
+    </div>
+
+    <!-- Modal de Upload -->
+    <div class="modal" id="uploadModal">
+        <div style="
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 400px;
+            position: relative;
+        ">
+            <button class="modal-close" onclick="closeUploadModal()">&times;</button>
+
+            <h3 style="margin-bottom: 15px;">Carregar imagem</h3>
+
+            <form id="uploadForm">
+                {% csrf_token %}
+
+                <input type="file"
+                    id="uploadInput"
+                    name="image"
+                    accept="image/*"
+                    required
+                    onchange="previewUpload(this)"
+                    style="margin-bottom: 15px;">
+
+                <!-- Preview -->
+                <img id="uploadPreview"
+                    style="display:none; width:100%; border-radius:8px; margin-bottom:15px;">
+
+                <button type="submit" class="btn btn-primary" style="width:100%;">
+                    <i class="fas fa-upload"></i> Enviar
+                </button>
+            </form>
+        </div>
+    </div>
+
+    
+    <script>
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStats();
+        });
+        
+        // Função para alternar visualmente o card quando checkbox mudar
+        function toggleImageCard(checkbox, imageId) {
+            console.log('Toggling image ID:', imageId, 'Type:', typeof imageId);
+            
+            const card = checkbox.closest('.image-card');
+
+            card.dataset.sendStatus = checkbox.checked ? 'true' : 'false';
+            
+            const badge = card.querySelector('.image-badge');
+            const statusText = card.querySelector('.status-text');
+            
+            if (checkbox.checked) {
+                // Marcar para enviar
+                card.classList.remove('not-send');
+                badge.classList.remove('badge-not-send');
+                badge.classList.add('badge-send');
+                badge.innerHTML = '<i class="fas fa-paper-plane"></i> Para enviar';
+                statusText.textContent = 'Enviar';
+                card.setAttribute('data-send-status', 'true');
+            } else {
+                // Não enviar
+                card.classList.add('not-send');
+                badge.classList.remove('badge-send');
+                badge.classList.add('badge-not-send');
+                badge.innerHTML = '<i class="fas fa-ban"></i> Não enviar';
+                statusText.textContent = 'Não enviar';
+                card.setAttribute('data-send-status', 'false');
+            }
+            
+            // Atualizar estatísticas
+            updateStats();
+        }
+
+        function openImageUpload() {
+            document.getElementById('uploadModal').style.display = 'flex';
+        }
+
+        function isVideo(url) {
+            return /\.(mp4|mpeg|mov|webm)$/i.test(url);
+        }
+
+        function closeUploadModal() {
+            document.getElementById('uploadModal').style.display = 'none';
+            document.getElementById('uploadForm').reset();
+            document.getElementById('uploadPreview').style.display = 'none';
+        }
+
+        document.querySelectorAll('.media-preview').forEach(container => {
+            const url = container.dataset.url;
+
+            if (isVideo(url)) {
+                const video = document.createElement('video');
+                video.src = url;
+                video.muted = true;
+                video.preload = 'metadata';
+                video.className = 'media-thumb';
+                video.onclick = () => openModal(url);
+
+                container.appendChild(video);
+            } else {
+                const img = document.createElement('img');
+                img.src = url;
+                img.alt = 'Conteúdo';
+                img.onclick = () => openModal(url);
+
+                container.appendChild(img);
+            }
+        });
+
+        function saveSendStatus() {
+            const images = [];
+
+            document.querySelectorAll('.image-card').forEach(card => {
+                images.push({
+                    id: card.dataset.imageId,
+                    send: card.dataset.sendStatus === 'true'
+                });
+            });
+
+            fetch("{% url 'save_images_send' %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify({ images })
+            })
+            .then(res => {
+                if (!res.ok) throw new Error('Erro ao salvar');
+                return res.json();
+            })
+            .then(() => {
+                alert("Configurações salvas com sucesso!");
+                location.reload(); // garante consistência com banco
+            })
+            .catch(err => {
+                console.error(err);
+                alert("Erro ao salvar configurações");
+            });
+        }
+
+
+        function previewUpload(input) {
+            const preview = document.getElementById('uploadPreview');
+            const file = input.files[0];
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Envio AJAX
+        document.getElementById('uploadForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+
+            fetch('/dash/images/upload/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: formData
+            })
+            .then(res => {
+                if (!res.ok) throw new Error('Erro no upload');
+                return res.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    location.reload(); // simples e seguro
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Erro ao enviar imagem');
+            });
+        });
+
+        
+        // Função para deletar imagem
+        function deleteImage(imageId, btn) {
+            if (!confirm("Tem certeza que deseja excluir esta imagem?")) return;
+
+            fetch(`/dash/images/delete/${imageId}/`, {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value,
+                },
+            })
+            .then(res => {
+                if (res.ok) {
+                    // Remover do DOM
+                    const card = btn.closest('.image-card');
+                    card.remove();
+                    updateStats();
+                } else {
+                    alert("Erro ao excluir imagem!");
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert("Erro ao excluir imagem!");
+            });
+        }
+
+        
+        // Função para atualizar estatísticas
+        function updateStats() {
+            const totalImages = document.querySelectorAll('.image-card').length;
+            const toSendCount = document.querySelectorAll('.image-card[data-send-status="true"]').length;
+            
+            document.getElementById('total-images').textContent = totalImages;
+            document.getElementById('to-send-count').textContent = toSendCount;
+            
+            // Atualizar footer
+            document.getElementById('footer-stats').textContent = 
+                `Total de ${totalImages} imagens | ${toSendCount} para enviar | Última atualização: ${new Date().toLocaleString('pt-BR')}`;
+        }
+        
+        // Função para resetar todos os checkboxes
+        function resetAllCheckboxes() {
+            document.querySelectorAll('.image-card').forEach(card => {
+                const checkbox = card.querySelector('input[type="checkbox"]');
+                const originalState = checkbox.getAttribute('data-original') === 'true';
+                
+                checkbox.checked = originalState;
+                toggleImageCard(checkbox, card.dataset.imageId);
+            });
+            
+            alert('Alterações canceladas! Valores restaurados.');
+        }
+        
+        // Funções para o modal
+        function openModal(Url) {
+            const modal = document.getElementById('imageModal');
+            const img = document.getElementById('modalImage');
+            const video = document.getElementById('modalVideo');
+
+            img.style.display = 'none';
+            video.style.display = 'none';
+
+            if (isVideo(url)) {
+                video.src = url;
+                video.style.display = 'block';
+                video.play();
+            } else {
+                img.src = url;
+                img.style.display = 'block';
+            }
+
+            modal.style.display = 'flex';
+        }
+        
+        function closeModal() {
+            const modal = document.getElementById('imageModal');
+            const video = document.getElementById('modalVideo');
+
+            video.pause();
+            video.src = '';
+            modal.style.display = 'none';
+        }
+        
+        // Fechar modal ao clicar fora da imagem
+        document.getElementById('imageModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+        
+        // Atalho de teclado para fechar modal
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+        
+        // Confirmar antes de sair se houver alterações não salvas
+        let hasUnsavedChanges = false;
+        
+        document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const original = this.getAttribute('data-original') === 'true';
+                hasUnsavedChanges = this.checked !== original;
+            });
+        });
+        
+        window.addEventListener('beforeunload', function(e) {
+            if (hasUnsavedChanges) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+        
+        // Form submission
+        document.getElementById('images-form').addEventListener('submit', function(e) {
+            hasUnsavedChanges = false;
+            
+            // Atualizar data-original para os novos valores
+            document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                checkbox.setAttribute('data-original', checkbox.checked.toString());
+            });
+            
+            // Opcional: mostrar loading
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+            submitBtn.disabled = true;
+            
+            // Reativar após 3 segundos (caso haja erro)
+            setTimeout(() => {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }, 3000);
+        });
+    </script>
+</body>
+</html>

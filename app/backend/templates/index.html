@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --success: #4cc9f0;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --radius: 12px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            color: var(--dark);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .logo i {
+            font-size: 2rem;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+
+        .btn-secondary:hover {
+            background: #f0f2ff;
+            transform: translateY(-2px);
+        }
+
+        .btn-admin {
+            background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+            color: white;
+        }
+
+        .btn-admin:hover {
+            background: linear-gradient(135deg, #ff5252, #ff7b7b);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            color: var(--dark);
+        }
+
+        .subtitle {
+            color: var(--gray);
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-left: 5px solid var(--primary);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        }
+
+        .card h3 {
+            font-size: 1rem;
+            color: var(--gray);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card h3 i {
+            font-size: 1.2rem;
+        }
+
+        .card strong {
+            font-size: 2.2rem;
+            color: var(--dark);
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .card .trend {
+            font-size: 0.9rem;
+            color: var(--success);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 25px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 40px;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .chart-header h2 {
+            font-size: 1.5rem;
+            color: var(--dark);
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: var(--gray);
+            font-size: 0.9rem;
+            border-top: 1px solid #eaeaea;
+        }
+
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .nav-buttons {
+                width: 100%;
+                justify-content: flex-start;
+            }
+            
+            .cards {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .chart-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .btn {
+                padding: 10px 18px;
+                font-size: 0.85rem;
+            }
+            
+            .card {
+                padding: 20px;
+            }
+            
+            .card strong {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="📊"></i>
+                <span>📊 Dashboard Analytics</span>
+            </div>
+            
+            <div class="nav-buttons">
+                <a href="/dash/photos/" class="btn btn-secondary">
+                    <i class="fas fa-images"></i> Gerenciar Imagens
+                </a>
+                <a href="/admin/" class="btn btn-admin" target="_blank">
+                    <i class="fas fa-cog"></i> Admin Django
+                </a>
+                <a href="/dash/dashboard/" class="btn btn-primary">
+                    <i class="fas fa-home"></i> Dashboard
+                </a>
+            </div>
+        </header>
+        
+        <main>
+            <p class="subtitle">Visão geral do desempenho financeiro e de clientes</p>
+            
+            <div class="cards">
+                <div class="card">
+                    <h3><i class="fas fa-money-bill-wave"></i> Total do Mês</h3>
+                    <strong>R$ {{ total_mes }}</strong>
+                    <span class="trend"><i class="fas fa-arrow-up"></i> 12% vs mês anterior</span>
+                </div>
+                
+                <div class="card">
+                    <h3><i class="fas fa-users"></i> Clientes Ativos</h3>
+                    <strong>{{ clientes_ativos }}</strong>
+                    <span class="trend"><i class="fas fa-arrow-up"></i> 5% vs mês anterior</span>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h2><i class="fas fa-chart-line"></i> Recebimentos Diários</h2>
+                    <div class="btn btn-secondary">
+                        <i class="fas fa-calendar"></i> Últimos 30 dias
+                    </div>
+                </div>
+                <canvas id="grafico" height="100"></canvas>
+            </div>
+        </main>
+        
+        <footer>
+            <p>Cang4 &copy; 2026 - Sistema de Gerenciamento de Conteudo</p>
+            <p>Atualizado em tempo real</p>
+        </footer>
+    </div>
+
+    {{ grafico|json_script:"grafico-data" }}
+
+    <script>
+        const data = JSON.parse(
+            document.getElementById("grafico-data").textContent
+        );
+
+        new Chart(document.getElementById("grafico"), {
+            type: "line",
+            data: {
+                labels: data.map(i => i.day),
+                datasets: [{
+                    label: "Recebimentos por dia",
+                    data: data.map(i => i.total),
+                    tension: 0.4,
+                    borderColor: '#4361ee',
+                    backgroundColor: 'rgba(67, 97, 238, 0.1)',
+                    borderWidth: 3,
+                    pointBackgroundColor: '#4361ee',
+                    pointRadius: 5,
+                    pointHoverRadius: 8,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                return 'R$ ' + value;
+                            }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

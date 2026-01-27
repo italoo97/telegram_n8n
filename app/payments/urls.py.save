@@ -1,0 +1,12 @@
+from django.urls import path
+from .views import *
+
+urlpatterns = [
+    path("create-subscription/", create_subscription, name="create_subscription"),
+    path("create-content-checkout/", create_content_checkout, name="create_content_checkout"),
+    path("create-pix-subscription/", create_pix_checkout, name="create_pix_checkout"),
+    path('generate-qr/', generate_qr_code, name='generate_qr'),
+    path('qr-code/<str:qr_base64>/', views.get_qr_code_image, name='qr_code_image'),
+    path("webhook/", mercado_pago_webhook, name="mercado_pago_webhook"),
+    path("health/", health, name="health"),
+]
