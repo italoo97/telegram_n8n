@@ -26,14 +26,13 @@ SECRET_KEY = 'django-insecure-%%f5u0^bmw%$h=9a4#1!w_trovipk!h&at@!&ke@^*8vl%&3j@
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['www.mybotbr.com', 'mybotbr.com', '84.247.176.94', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = []
 
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://mybotbr.com',
-    'https://www.mybotbr.com',
+    ,
 ]
 
 MEDIA_URL = '/media/'
