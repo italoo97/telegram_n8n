@@ -1,0 +1,576 @@
+{
+  "name": "Telegram - Menu Inicial",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://ema-unfoundering-ellan.ngrok-free.dev/api/create-subscription/",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"telegram_id\": {{ $json.callback_query.message.chat.id }},\n  \"chat_id\": {{ $json.callback_query.message.chat.id }}\n}",
+        "options": {}
+      },
+      "id": "87b77236-601b-4080-9416-dc775a487ccc",
+      "name": "Criar Assinatura",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        1920,
+        752
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://ema-unfoundering-ellan.ngrok-free.dev/api/create-content-checkout/",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"telegram_id\": {{ $json.callback_query.from.id }},\n  \"chat_id\": {{ $json.callback_query.message.chat.id }}\n}",
+        "options": {}
+      },
+      "id": "72211e63-83ef-4175-a907-0e1f35852d58",
+      "name": "Criar Conteúdo",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        1920,
+        1024
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Switch Options').item.json.callback_query.from.id }}\n",
+        "text": "Finalize o pagamento clicando abaixo 👇",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "Pagar ",
+                    "additionalFields": {
+                      "url": "={{\n    $if(\n        $(\"Criar Assinatura\").isExecuted,\n        $('Criar Assinatura').item.json.checkout_url,\n        $if(\n            $(\"Criar Conteúdo\").isExecuted,\n            $('Criar Conteúdo').item.json.checkout_url,\n            $if(\n                $(\"Criar Conteúdo Exclusivo\").isExecuted,\n                $('Criar Conteúdo Exclusivo').item.json.checkout_url,\n                \"\"\n            )\n        )\n    )\n}}\n"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {}
+      },
+      "id": "12f75b2e-cc3f-400a-848a-bc464afd7f1e",
+      "name": "Enviar Checkout",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        2880,
+        976
+      ],
+      "webhookId": "43ac68c5-3dec-465a-8107-060023d348a6",
+      "credentials": {
+        "telegramApi": {
+          "id": "R6d2RWRkZTleSlSe",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message",
+          "callback_query"
+        ],
+        "additionalFields": {}
+      },
+      "id": "8a924b94-12c5-467c-a67e-7176feff7d5c",
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1,
+      "position": [
+        800,
+        912
+      ],
+      "webhookId": "76cda43c-c9ff-4650-b685-eeee6a13c5f8",
+      "credentials": {
+        "telegramApi": {
+          "id": "R6d2RWRkZTleSlSe",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "leftValue": "={{$json.message.text}}",
+              "rightValue": "=/start",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "id": "aabf107b-d10c-4244-a8d4-62fff054415e"
+            },
+            {
+              "id": "7750a4ff-b372-4b4a-8bcf-6f815fa00297",
+              "leftValue": "={{$json.message.text}}",
+              "rightValue": "Oi",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "id": "6047e442-36bf-4854-b8d0-6fa5c5700a3b",
+      "name": "Filter /start Only?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1168,
+        768
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=Oi {{ $('Telegram Trigger').item.json.message.chat.username }}\n\nSeja bem-vindo(a).  \n\nAqui você encontra conteúdos exclusivos, criados para quem gosta de ir além do comum.  \n\nTudo é discreto, automático e sem complicações.  \n\nMe diga… o que você deseja hoje? 👇",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "💎 Grupo VIP",
+                    "additionalFields": {
+                      "callback_data": "subscription"
+                    }
+                  },
+                  {
+                    "text": "🖼️ Imagens Premium",
+                    "additionalFields": {
+                      "callback_data": "content"
+                    }
+                  },
+                  {
+                    "text": "🎥 Vídeos Exclusivos",
+                    "additionalFields": {
+                      "callback_data": "exclusive"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {}
+      },
+      "id": "26120512-ad43-4ca7-9c2f-342f95e4a309",
+      "name": "Enviar Menu",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        1568,
+        528
+      ],
+      "webhookId": "f649412c-2780-418c-9568-40bfdebd4559",
+      "credentials": {
+        "telegramApi": {
+          "id": "R6d2RWRkZTleSlSe",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.callback_query.data }}",
+                    "rightValue": "subscription",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "5aed9ee3-05fa-4e65-bbdb-bb259c992147"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.callback_query.data }}",
+                    "rightValue": "content",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "c5bbed3f-3bf0-40ef-8590-9ce18a058a42"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "id": "fb6a4f7c-96e8-4827-8f9e-1bd7c6608f44",
+                    "leftValue": "={{ $json.callback_query.data }}",
+                    "rightValue": "exclusive",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "bcdb0c7e-823f-4e5d-8bef-108d840003c1",
+      "name": "Switch Options",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        1552,
+        912
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://ema-unfoundering-ellan.ngrok-free.dev/api/create-pix-subscription/",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "telegram_id",
+              "value": "={{ Number($('Switch Options').item.json.callback_query.message.chat.id) }}"
+            },
+            {
+              "name": "chat_id",
+              "value": "={{ Number($('Switch Options').item.json.callback_query.message.chat.id) }}"
+            },
+            {
+              "name": "product_type",
+              "value": "={{ $('Switch Options').item.json.callback_query.data }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "80ea18bb-ec1e-471a-8675-e93aab70b2e8",
+      "name": "Criar PIX",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        2304,
+        896
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "sendPhoto",
+        "chatId": "={{ $json.chat_id }}",
+        "file": "=https://api.qrserver.com/v1/create-qr-code/?size=300x300&format=png&data={{ encodeURIComponent($('Criar PIX').item.json.qr_code) }}",
+        "additionalFields": {
+          "parse_mode": "MarkdownV2"
+        }
+      },
+      "id": "0959c130-e8ca-4632-b005-8e4b356cd05c",
+      "name": "Enviar QR Code PIX",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        2592,
+        976
+      ],
+      "webhookId": "b52b201d-35de-4f35-a17c-8ef050af3507",
+      "credentials": {
+        "telegramApi": {
+          "id": "R6d2RWRkZTleSlSe",
+          "name": "Telegram account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Criar PIX').item.json.chat_id }}",
+        "text": "=🔑 *PIX Copia e Cola:*\n\n`{{ $('Criar PIX').item.json.qr_code }}`",
+        "additionalFields": {
+          "parse_mode": "MarkdownV2"
+        }
+      },
+      "id": "7b332f7c-3c11-4586-be63-d783a797cd11",
+      "name": "Enviar PIX Copia e Cola",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        2736,
+        816
+      ],
+      "webhookId": "a05b60cb-a5eb-407f-b559-9066d574dde9",
+      "credentials": {
+        "telegramApi": {
+          "id": "R6d2RWRkZTleSlSe",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "function fixBase64Padding(base64) {\n  let clean = base64.trim();\n  \n  if (clean.startsWith('data:image')) {\n    clean = clean.split('base64,')[1] || clean;\n  }\n  \n  let padding = 4 - (clean.length % 4);\n  if (padding !== 4) {\n    clean += '='.repeat(padding);\n  }\n  \n  clean = clean.replace(/[^A-Za-z0-9+/=]/g, '');\n  \n  return clean;\n}\n\nconst originalBase64 = items[0].json.qr_code_base64;\nconsole.log('Original base64 length:', originalBase64 ? originalBase64.length : 0);\nconsole.log('First 100 chars:', originalBase64 ? originalBase64.substring(0, 100) : 'none');\n\nif (!originalBase64) {\n  throw new Error('qr_code_base64 não encontrado');\n}\n\nconst fixedBase64 = fixBase64Padding(originalBase64);\nconsole.log('Fixed base64 length:', fixedBase64.length);\nconsole.log('É múltiplo de 4?', fixedBase64.length % 4 === 0);\n\nconst base64Regex = /^[A-Za-z0-9+/]*={0,3}$/;\nconsole.log('É base64 válido?', base64Regex.test(fixedBase64));\n\nreturn [{\n  json: {\n    ...items[0].json,\n    qr_code_base64_fixed: fixedBase64\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2464,
+        800
+      ],
+      "id": "94f4f8e5-c105-4435-844f-cc590f0b0282",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "sendPhoto",
+        "chatId": "={{ $json.message.chat.id }}",
+        "file": "https://lh3.googleusercontent.com/d/12kzWueTo-Yctl9CSGIV_4iEnXVUtFXeN",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1392,
+        656
+      ],
+      "id": "104ddc38-3dfc-4cb3-8b14-a231cd1afc76",
+      "name": "Send a photo message",
+      "webhookId": "c6cb6eb6-2f6a-435e-924a-c453f1773011",
+      "credentials": {
+        "telegramApi": {
+          "id": "R6d2RWRkZTleSlSe",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://mybotbr.com/api/create-exclusive-checkout/",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"telegram_id\": {{ $json.callback_query.from.id }},\n  \"chat_id\": {{ $json.callback_query.message.chat.id }}\n}",
+        "options": {}
+      },
+      "id": "aa70ae5b-dd8e-49c5-893c-3cad6b834597",
+      "name": "Criar Conteúdo Exclusivo",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        1904,
+        1248
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Criar Assinatura": {
+      "main": [
+        [
+          {
+            "node": "Criar PIX",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar Conteúdo": {
+      "main": [
+        [
+          {
+            "node": "Criar PIX",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Filter /start Only?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter /start Only?": {
+      "main": [
+        [
+          {
+            "node": "Send a photo message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Switch Options",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch Options": {
+      "main": [
+        [
+          {
+            "node": "Criar Assinatura",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Criar Conteúdo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Criar Conteúdo Exclusivo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar PIX": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar QR Code PIX": {
+      "main": [
+        [
+          {
+            "node": "Enviar PIX Copia e Cola",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar PIX Copia e Cola": {
+      "main": [
+        [
+          {
+            "node": "Enviar Checkout",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Enviar QR Code PIX",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a photo message": {
+      "main": [
+        [
+          {
+            "node": "Enviar Menu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar Conteúdo Exclusivo": {
+      "main": [
+        [
+          {
+            "node": "Criar PIX",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "a57d6ec2-42f8-457f-8081-82fb362ceee5",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "6a5d53a1068124b512c651d9b4908fa8a19a877ae95ff17ee5bdd7624877c9e2"
+  },
+  "id": "jhXTzBZYnKHbNprXaRmxj",
+  "tags": []
+}

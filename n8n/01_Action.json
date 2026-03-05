@@ -1,0 +1,344 @@
+{
+  "name": "01_Action",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "mercado-pago",
+        "options": {}
+      },
+      "id": "b1ed41ee-1bcb-4893-ab8b-e1e2935c1e3c",
+      "name": "Webhook Django",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -704,
+        240
+      ],
+      "webhookId": "495f7ebd-983d-4c69-bc78-61156826e1a1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.success }}",
+              "value2": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "738a654d-9916-4047-a47d-bab51dfe0d7b",
+      "name": "Pagamento aprovado?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -480,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "send_images",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "conditions": {
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "add_to_vip_group",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "5f941d45-5dc9-453a-8319-a7f9551eaf9a",
+      "name": "Switch Action",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        -256,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chat_id }}",
+        "text": "={{ $json.message }}",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "3c733cf1-03d9-43fc-82fb-32c1eda6b7cc",
+      "name": "Notificar Conteúdo",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        0,
+        64
+      ],
+      "webhookId": "a64d487b-987c-4710-9387-de4843eca8b7",
+      "credentials": {
+        "telegramApi": {
+          "id": "R6d2RWRkZTleSlSe",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "return ($json.image_urls || []).map((url, index) => ({\n  json: {\n    chat_id: $json.chat_id,\n    photo: url,\n    caption: `📸 Imagem ${index + 1} de ${$json.image_urls.length}`\n  }\n}));"
+      },
+      "id": "b3314b82-0209-4684-8557-3ae781c3f54b",
+      "name": "Preparar Imagens",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        224,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chat_id }}",
+        "text": "teste",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "98791af9-6b81-45b6-8f1c-9a5016ec82b7",
+      "name": "Enviar Foto",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        448,
+        64
+      ],
+      "webhookId": "6932a57d-64a0-4ec9-a720-c5d8ed651421",
+      "credentials": {
+        "telegramApi": {
+          "id": "R6d2RWRkZTleSlSe",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chat_id }}",
+        "text": "🎉 Conteúdo entregue com sucesso!\n\nAproveite 😄",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "6e675703-12ce-454d-93a1-6671b24628dc",
+      "name": "Conteúdo Entregue",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        672,
+        64
+      ],
+      "webhookId": "9ce514ab-386d-4347-af51-ec282cc2fa0e",
+      "credentials": {
+        "telegramApi": {
+          "id": "R6d2RWRkZTleSlSe",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chat_id }}",
+        "text": "={{ $json.message }}",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "dc3d97f5-3e09-48c4-ac01-12e7a5e6ad41",
+      "name": "Notificar Assinatura",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        0,
+        464
+      ],
+      "webhookId": "d4e0d0d2-33be-4ab9-bebc-146a4dbf2de1",
+      "credentials": {
+        "telegramApi": {
+          "id": "R6d2RWRkZTleSlSe",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://api.telegram.org/bot{{ $env.TELEGRAM_BOT_TOKEN }}/addChatMember",
+        "jsonParameters": true,
+        "options": {}
+      },
+      "id": "59137e77-488b-475d-9c24-d1cfc226f6ab",
+      "name": "Adicionar ao Grupo VIP (HTTP)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        224,
+        464
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chat_id }}",
+        "text": "🎉 Você foi adicionado ao grupo VIP!\n\nValidade: {{ $json.expiration_at.split('T')[0] }}\n\nBem-vindo 👑",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "de1ca014-17fc-4b3b-8527-674a9bc1ff7f",
+      "name": "Sucesso VIP",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        448,
+        464
+      ],
+      "webhookId": "60505284-6878-49ca-8f99-0c306a6ca0ea",
+      "credentials": {
+        "telegramApi": {
+          "id": "R6d2RWRkZTleSlSe",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook Django": {
+      "main": [
+        [
+          {
+            "node": "Pagamento aprovado?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pagamento aprovado?": {
+      "main": [
+        [
+          {
+            "node": "Switch Action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch Action": {
+      "main": [
+        [
+          {
+            "node": "Notificar Conteúdo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notificar Assinatura",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notificar Conteúdo": {
+      "main": [
+        [
+          {
+            "node": "Preparar Imagens",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Imagens": {
+      "main": [
+        [
+          {
+            "node": "Enviar Foto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Foto": {
+      "main": [
+        [
+          {
+            "node": "Conteúdo Entregue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notificar Assinatura": {
+      "main": [
+        [
+          {
+            "node": "Adicionar ao Grupo VIP (HTTP)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Adicionar ao Grupo VIP (HTTP)": {
+      "main": [
+        [
+          {
+            "node": "Sucesso VIP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "121b7a6a-2d02-44eb-8091-97f519093605",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "6a5d53a1068124b512c651d9b4908fa8a19a877ae95ff17ee5bdd7624877c9e2"
+  },
+  "id": "gjBUL-Ci34iN8vULXwqrF",
+  "tags": []
+}
